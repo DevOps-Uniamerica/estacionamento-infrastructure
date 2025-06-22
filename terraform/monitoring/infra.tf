@@ -22,7 +22,6 @@ resource "google_compute_instance" "vm" {
 
   metadata = {
     ssh-keys = "${var.gcp_user}:${var.ssh_key_pub}"
-    force_update = "true"
   }
 
   tags = ["ssh", "http-server"]

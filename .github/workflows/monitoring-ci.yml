@@ -27,6 +27,8 @@ jobs:
         working-directory: terraform/monitoring
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/ansible/credentials.json
+          GCP_USER: ${{ secrets.GCP_USER }}
+          SSH_KEY_PUB: ${{ secrets.SSH_KEY_PUB }}
         run: |
           terraform init
           terraform import \
