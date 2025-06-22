@@ -7,7 +7,7 @@
   vars:
     cluster_name: "{{ cluster_name }}"
     cluster_location: "{{ cluster_location }}"
-    project_id: "celtic-shape-452222-c9"
+    project_id: "infraestrutura-devops-stg"
     docker_user: "{{ docker_user }}"
     app_namespace: "estacionamento"
     # Definir credenciais consistentes do PostgreSQL
