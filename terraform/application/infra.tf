@@ -13,7 +13,7 @@ resource "google_container_cluster" "k8s" {
   ip_allocation_policy {}
 
   node_config {
-    machine_type = "e2-micro"
+    machine_type = "e2-medium"
     disk_size_gb = 20
     disk_type    = "pd-standard"
 
