@@ -75,7 +75,7 @@ jobs:
         id: terraform
         working-directory: terraform/application
         run: |
-          terraform init -input=false
+          terraform init -upgrade -input=false
           terraform plan -input=false \
             -var="project=infraestrutura-devops-stg" \
             -var="gcp_user=$GCP_USER" \
