@@ -151,6 +151,8 @@ jobs:
             -e cluster_name=$CLUSTER_NAME \
             -e cluster_location=$CLUSTER_LOCATION \
             -e docker_user=${{ secrets.DOCKER_USERNAME }}
+            -e "frontend_image=frontend-develop"
+            -e "backend_image=backend-develop"
 
       - name: Verificar status do deploy
         run: |
