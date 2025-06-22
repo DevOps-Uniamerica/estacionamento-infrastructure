@@ -1,0 +1,84 @@
+name: Deploy monitoramento para Main
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+
+  terraform:
+    name: Provisionar infraestrutura com Terraform
+    runs-on: ubuntu-latest
+    outputs:
+      vm_ip: ${{ steps.pegar_ip.outputs.vm_ip }}
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Instalar Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.4
+
+      - name: Criar arquivo de credenciais do GCP
+        run: echo '${{ secrets.GCP_CREDENTIALS_PROD }}' > ${{ github.workspace }}/ansible/credentials.json
+
+      - name: Executar Terraform
+        working-directory: terraform/monitoring
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/ansible/credentials.json
+          GCP_USER: ${{ secrets.GCP_USER }}
+          SSH_KEY_PUB: ${{ secrets.SSH_KEY_PUB }}
+        run: |
+          terraform init
+          terraform import \
+            -var="project=infraestrutura-devops-prod" \
+            -var="gcp_user=$GCP_USER" \
+            -var="ssh_key_pub=$SSH_KEY_PUB" \
+            google_compute_instance.vm projects/infraestrutura-devops-prod/zones/southamerica-east1-a/instances/vm-monitoramento || true
+          terraform import \
+            -var="project=infraestrutura-devops-prod" \
+            -var="gcp_user=$GCP_USER" \
+            -var="ssh_key_pub=$SSH_KEY_PUB" \
+            google_compute_firewall.firewall projects/infraestrutura-devops-prod/global/firewalls/allow-ssh-prometheus-grafana-app || true
+          terraform apply -auto-approve \
+            -var="project=infraestrutura-devops-prod" \
+            -var="gcp_user=$GCP_USER" \
+            -var="ssh_key_pub=$SSH_KEY_PUB"
+
+      - name: Obter IP da VM
+        id: pegar_ip
+        working-directory: terraform/monitoring
+        run: |
+          echo "vm_ip=$(terraform output -raw vm_ip_address)" >> $GITHUB_OUTPUT
+
+  ansible:
+    name: Configurar VM com Ansible
+    runs-on: ubuntu-latest
+    needs: [terraform]
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Instalar Ansible
+        run: |
+          sudo apt update
+          sudo apt install -y ansible
+
+      - name: Criar chave SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Gerar Inventory dinâmico
+        run: |
+          echo "${{ needs.terraform.outputs.vm_ip }} ansible_user=${{ secrets.GCP_USER }} ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no'" >> ansible/inventory.ini
+
+      - name: Executar Ansible Playbook
+        run: |
+          ansible-playbook -i ansible/inventory.ini ansible/monitoring/monitoring.yml
