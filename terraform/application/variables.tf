@@ -1,3 +1,8 @@
+variable "project" {
+  type = string
+  description = "Nome do projeto"
+}
+
 variable "gcp_user" {
   type = string
   description = "Usuário SSH"

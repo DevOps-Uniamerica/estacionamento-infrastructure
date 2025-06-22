@@ -1,11 +1,11 @@
 provider "google" {
-  project = "infraestrutura-devops-stg"
+  project = "${var.project}"
   region  = "southamerica-east1"
-  #credentials = file("C:/Users/Luis/Documents/Mensal4/final/stg/gcp-key.json") #- Credenciais locais apenas para teste local, na pipe deve ser utilizado o secrets do git
+  #credentials = file("C:/Users/Luis/Documents/Mensal4/final/terraform-access-key.json") - Credenciais locais apenas para teste local, na pipe deve ser utilizado o secrets do git
 }
 
-resource "google_container_cluster" "k8s_stg" {
-  name     = "k8s-cluster-stg"
+resource "google_container_cluster" "k8s_prod" {
+  name     = "k8s-cluster-prod"
   location = "southamerica-east1"
 
   remove_default_node_pool = true
@@ -17,24 +17,23 @@ resource "google_container_cluster" "k8s_stg" {
   ip_allocation_policy {}
 }
 
-resource "google_container_node_pool" "k8s_stg_nodes" {
-  name       = "stg-node-pool"
+resource "google_container_node_pool" "k8s_prod_nodes" {
+  name       = "prod-node-pool"
   location   = "southamerica-east1"
-  cluster    = google_container_cluster.k8s_stg.name
+  cluster    = google_container_cluster.k8s_prod.name
 
   node_config {
     machine_type = "e2-medium"
-    
 
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]
 
     labels = {
-      env = "stg"
+      env = "prod"
     }
 
-    tags = ["k8s", "stg"]
+    tags = ["k8s", "prod"]
   }
 
   initial_node_count = 1
@@ -55,9 +54,9 @@ resource "google_compute_firewall" "allow_k8s_services" {
 }
 
 output "cluster_name" {
-  value = google_container_cluster.k8s_stg.name
+  value = google_container_cluster.k8s_prod.name
 }
 
 output "cluster_location" {
-  value = google_container_cluster.k8s_stg.location
+  value = google_container_cluster.k8s_prod.location
 }

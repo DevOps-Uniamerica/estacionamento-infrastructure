@@ -2,7 +2,7 @@ name: Deploy Kubernetes - Produção
 
 on:
   push:
-    branches: [ homologacao ]
+    branches: [ staging ]
   workflow_dispatch:
 
 jobs:
@@ -21,18 +21,18 @@ jobs:
       - name: Autenticar no Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          credentials_json: ${{ secrets.GCP_CREDENTIALS_STG }}
 
       - name: Configurar Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
-          project_id: celtic-shape-452222-c9
+          project_id: infraestrutura-devops-stg
 
       - name: Verificar se cluster existe
         id: check
         run: |
           # Verificar se o cluster existe
-          if gcloud container clusters describe k8s-cluster-prod --location=southamerica-east1 --project=celtic-shape-452222-c9 >/dev/null 2>&1; then
+          if gcloud container clusters describe k8s-cluster-prod --location=southamerica-east1 --project=infraestrutura-devops-stg >/dev/null 2>&1; then
             echo "cluster_exists=true" >> $GITHUB_OUTPUT
             echo "cluster_name=k8s-cluster-prod" >> $GITHUB_OUTPUT
             echo "cluster_location=southamerica-east1" >> $GITHUB_OUTPUT
@@ -69,17 +69,19 @@ jobs:
       - name: Autenticar no Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          credentials_json: ${{ secrets.GCP_CREDENTIALS_STG }}
 
       - name: Executar Terraform
         id: terraform
-        working-directory: terraform/application/prod
+        working-directory: terraform/application
         run: |
           terraform init -input=false
           terraform plan -input=false \
+            -var="project=infraestrutura-devops-stg" \
             -var="gcp_user=$GCP_USER" \
             -var="ssh_key_pub=$SSH_KEY_PUB"
           terraform apply -auto-approve -input=false \
+            -var="project=infraestrutura-devops-stg" \
             -var="gcp_user=$GCP_USER" \
             -var="ssh_key_pub=$SSH_KEY_PUB"
           
@@ -99,12 +101,12 @@ jobs:
       - name: Autenticar no Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          credentials_json: ${{ secrets.GCP_CREDENTIALS_STG }}
 
       - name: Configurar Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
-          project_id: celtic-shape-452222-c9
+          project_id: infraestrutura-devops-stg
 
       - name: Instalar gke-gcloud-auth-plugin
         run: |
@@ -125,7 +127,7 @@ jobs:
         run: |
           gcloud container clusters get-credentials $CLUSTER_NAME \
             --location $CLUSTER_LOCATION \
-            --project celtic-shape-452222-c9
+            --project infraestrutura-devops-stg
 
       - name: Instalar Ansible e dependências
         run: |
