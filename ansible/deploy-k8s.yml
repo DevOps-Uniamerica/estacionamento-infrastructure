@@ -569,7 +569,7 @@
               spec:
                 containers:
                 - name: frontend
-                  image: "{{ docker_user }}/{{ backend_image }}:latest"
+                  image: "{{ docker_user }}/{{ frontend_image }}:latest"
                   imagePullPolicy: Always
                   ports:
                   - containerPort: 80
