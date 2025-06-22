@@ -4,19 +4,13 @@ provider "google" {
 }
 
 resource "google_container_cluster" "k8s" {
-  name     = "k8s-cluster"
-  location = "southamerica-east1"
+  name       = "k8s-cluster"
+  location   = "southamerica-east1"
 
   network    = "default"
   subnetwork = "default"
 
   ip_allocation_policy {}
-}
-
-resource "google_container_node_pool" "k8s_nodes" {
-  name       = "node-pool"
-  location   = "southamerica-east1"
-  cluster    = google_container_cluster.k8s.name
 
   node_config {
     machine_type = "e2-micro"
