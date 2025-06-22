@@ -73,7 +73,7 @@ jobs:
 
       - name: Executar Terraform
         id: terraform
-        working-directory: terraform/prod
+        working-directory: terraform/application/prod
         run: |
           terraform init -input=false
           terraform plan -input=false \
