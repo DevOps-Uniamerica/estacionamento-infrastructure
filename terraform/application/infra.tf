@@ -7,8 +7,6 @@ resource "google_container_cluster" "k8s" {
   name     = "k8s-cluster"
   location = "southamerica-east1"
 
-  remove_default_node_pool = true
-
   network    = "default"
   subnetwork = "default"
 
