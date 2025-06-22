@@ -1,12 +1,3 @@
-terraform {
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = ">= 6.38.0"
-    }
-  }
-}
-
 provider "google" {
   project = var.project
   region  = "southamerica-east1"
@@ -16,10 +7,8 @@ resource "google_container_cluster" "k8s" {
   name     = "k8s-cluster"
   location = "southamerica-east1"
 
-  # Cluster Autopilot (não precisa gerenciar node pool manualmente)
-  autopilot {
-    enabled = true
-  }
+  remove_default_node_pool = true
+  initial_node_count       = 1
 
   network    = "default"
   subnetwork = "default"
@@ -27,22 +16,22 @@ resource "google_container_cluster" "k8s" {
   ip_allocation_policy {}
 }
 
-resource "google_compute_firewall" "allow_k8s_services" {
-  name    = "allow-k8s-services"
-  network = "default"
+resource "google_container_node_pool" "k8s_nodes" {
+  name       = "node-pool"
+  location   = "southamerica-east1"
+  cluster    = google_container_cluster.k8s.name
 
-  allow {
-    protocol = "tcp"
-    ports    = ["22", "3000", "9090", "80", "443", "8080"]
+  node_config {
+    machine_type = "e2-micro"
+    disk_size_gb = 20
+    disk_type    = "pd-standard"
+
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/cloud-platform"
+    ]
+
+    tags = ["k8s"]
   }
 
-  source_ranges = ["0.0.0.0/0"]
-}
-
-output "cluster_name" {
-  value = google_container_cluster.k8s.name
-}
-
-output "cluster_location" {
-  value = google_container_cluster.k8s.location
+  initial_node_count = 1
 }
