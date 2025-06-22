@@ -32,16 +32,16 @@ jobs:
         id: check
         run: |
           # Verificar se o cluster existe
-          if gcloud container clusters describe k8s-cluster-prod --location=southamerica-east1 --project=infraestrutura-devops-stg >/dev/null 2>&1; then
+          if gcloud container clusters describe k8s-cluster --location=southamerica-east1 --project=infraestrutura-devops-stg >/dev/null 2>&1; then
             echo "cluster_exists=true" >> $GITHUB_OUTPUT
-            echo "cluster_name=k8s-cluster-prod" >> $GITHUB_OUTPUT
+            echo "cluster_name=k8s-cluster" >> $GITHUB_OUTPUT
             echo "cluster_location=southamerica-east1" >> $GITHUB_OUTPUT
-            echo "✅ Cluster k8s-cluster-prod já existe"
+            echo "✅ Cluster k8s-cluster já existe"
           else
             echo "cluster_exists=false" >> $GITHUB_OUTPUT
             echo "cluster_name=" >> $GITHUB_OUTPUT
             echo "cluster_location=" >> $GITHUB_OUTPUT
-            echo "❌ Cluster k8s-cluster-prod não existe"
+            echo "❌ Cluster k8s-cluster não existe"
           fi
 
   terraform-infra:
