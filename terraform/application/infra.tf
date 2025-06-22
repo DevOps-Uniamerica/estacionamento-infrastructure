@@ -23,17 +23,17 @@ resource "google_container_node_pool" "k8s_prod_nodes" {
   cluster    = google_container_cluster.k8s_prod.name
 
   node_config {
-    machine_type = "e2-medium"
+    machine_type = "e2-micro"
+    disk_size_gb = 20
+    disk_type    = "pd-standard"
 
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]
 
-    labels = {
-      env = "prod"
-    }
+    labels = {}
 
-    tags = ["k8s", "prod"]
+    tags = ["k8s"]
   }
 
   initial_node_count = 1
