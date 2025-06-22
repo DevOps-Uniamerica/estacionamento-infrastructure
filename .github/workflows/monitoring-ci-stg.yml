@@ -2,7 +2,11 @@ name: Deploy monitoramento para Staging
 
 on:
   push:
-    branches: [ staging ]
+    branches:
+      - staging
+  pull_request:
+    branches:
+      - staging
 
 jobs:
 
@@ -77,5 +81,4 @@ jobs:
 
       - name: Executar Ansible Playbook
         run: |
-          ansible-playbook -i ansible/inventory.ini ansible/monitoring/monitoring.yml \
-            -e "docker_user=${{ secrets.DOCKER_USERNAME }} docker_password=${{ secrets.DOCKER_PASSWORD }}"
+          ansible-playbook -i ansible/inventory.ini ansible/monitoring/monitoring.yml

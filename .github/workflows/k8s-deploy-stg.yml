@@ -2,7 +2,11 @@ name: Deploy Kubernetes - Produção
 
 on:
   push:
-    branches: [ staging ]
+    branches:
+      - staging
+  pull_request:
+    branches:
+      - staging
   workflow_dispatch:
 
 jobs:
@@ -143,6 +147,7 @@ jobs:
         working-directory: ansible
         run: |
           ansible-playbook -i k8s-inventory.ini deploy-k8s.yml \
+            -e "project_id=infraestrutura-devops-stg"
             -e cluster_name=$CLUSTER_NAME \
             -e cluster_location=$CLUSTER_LOCATION \
             -e docker_user=${{ secrets.DOCKER_USERNAME }}

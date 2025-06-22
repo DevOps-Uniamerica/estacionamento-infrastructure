@@ -5,9 +5,9 @@
   gather_facts: false
 
   vars:
-    cluster_name: "{{ cluster_name }}"
-    cluster_location: "{{ cluster_location }}"
-    project_id: "infraestrutura-devops-stg"
+    cluster_name: "k8s-cluster"
+    cluster_location: "southamerica-east1"
+    project_id: "{{ project_id }}"
     docker_user: "{{ docker_user }}"
     app_namespace: "estacionamento"
     # Definir credenciais consistentes do PostgreSQL
