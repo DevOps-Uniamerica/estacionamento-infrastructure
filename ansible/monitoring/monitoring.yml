@@ -1,4 +1,4 @@
-- hosts: monitoring
+- hosts: all
   become: yes
   vars:
     monitoring_dir: /opt/monitoring
