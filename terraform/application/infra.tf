@@ -26,3 +26,13 @@ resource "google_container_cluster" "k8s" {
 
   initial_node_count = 1
 }
+
+output "cluster_name" {
+  description = "O nome do cluster GKE."
+  value       = google_container_cluster.k8s.name
+}
+
+output "cluster_location" {
+  description = "A localização (região/zona) do cluster GKE."
+  value       = google_container_cluster.k8s.location
+}
