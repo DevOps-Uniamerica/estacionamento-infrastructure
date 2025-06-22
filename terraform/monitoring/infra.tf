@@ -1,10 +1,10 @@
 provider "google" {
-  project = "celtic-shape-452222-c9"
+  project = "${var.project}"
   region  = "southamerica-east1"
 }
 
 resource "google_compute_instance" "vm" {
-  name         = "vm-aplicacao"
+  name         = "vm-monitoramento"
   machine_type = "e2-micro"
   zone         = "southamerica-east1-a"
 
