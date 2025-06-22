@@ -147,11 +147,11 @@ jobs:
         working-directory: ansible
         run: |
           ansible-playbook -i k8s-inventory.ini deploy-k8s.yml \
-            -e "project_id=infraestrutura-devops-stg"
+            -e "project_id=infraestrutura-devops-stg" \
             -e cluster_name=$CLUSTER_NAME \
             -e cluster_location=$CLUSTER_LOCATION \
-            -e docker_user=${{ secrets.DOCKER_USERNAME }}
-            -e "frontend_image=frontend-develop"
+            -e docker_user=${{ secrets.DOCKER_USERNAME }} \
+            -e "frontend_image=frontend-develop" \
             -e "backend_image=backend-develop"
 
       - name: Verificar status do deploy
