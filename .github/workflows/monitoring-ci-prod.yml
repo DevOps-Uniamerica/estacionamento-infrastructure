@@ -1,8 +1,12 @@
-name: Deploy monitoramento para Staging
+name: Deploy monitoramento para Main
 
 on:
   push:
-    branches: [ staging ]
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
 
@@ -21,26 +25,28 @@ jobs:
           terraform_version: 1.7.4
 
       - name: Criar arquivo de credenciais do GCP
-        run: echo '${{ secrets.GCP_CREDENTIALS_STG }}' > ${{ github.workspace }}/ansible/credentials.json
+        run: echo '${{ secrets.GCP_CREDENTIALS_PROD }}' > ${{ github.workspace }}/ansible/credentials.json
 
       - name: Executar Terraform
         working-directory: terraform/monitoring
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/ansible/credentials.json
+          GCP_USER: ${{ secrets.GCP_USER }}
+          SSH_KEY_PUB: ${{ secrets.SSH_KEY_PUB }}
         run: |
           terraform init
           terraform import \
-            -var="project=infraestrutura-devops-stg" \
+            -var="project=infraestrutura-devops-prod" \
             -var="gcp_user=$GCP_USER" \
             -var="ssh_key_pub=$SSH_KEY_PUB" \
-            google_compute_instance.vm projects/infraestrutura-devops-stg/zones/southamerica-east1-a/instances/vm-monitoramento || true
+            google_compute_instance.vm projects/infraestrutura-devops-prod/zones/southamerica-east1-a/instances/vm-monitoramento || true
           terraform import \
-            -var="project=infraestrutura-devops-stg" \
+            -var="project=infraestrutura-devops-prod" \
             -var="gcp_user=$GCP_USER" \
             -var="ssh_key_pub=$SSH_KEY_PUB" \
-            google_compute_firewall.firewall projects/infraestrutura-devops-stg/global/firewalls/allow-ssh-prometheus-grafana-app || true
+            google_compute_firewall.firewall projects/infraestrutura-devops-prod/global/firewalls/allow-ssh-prometheus-grafana-app || true
           terraform apply -auto-approve \
-            -var="project=infraestrutura-devops-stg" \
+            -var="project=infraestrutura-devops-prod" \
             -var="gcp_user=$GCP_USER" \
             -var="ssh_key_pub=$SSH_KEY_PUB"
 
@@ -75,5 +81,4 @@ jobs:
 
       - name: Executar Ansible Playbook
         run: |
-          ansible-playbook -i ansible/inventory.ini ansible/monitoring/monitoring.yml \
-            -e "docker_user=${{ secrets.DOCKER_USERNAME }} docker_password=${{ secrets.DOCKER_PASSWORD }}"
+          ansible-playbook -i ansible/inventory.ini ansible/monitoring/monitoring.yml

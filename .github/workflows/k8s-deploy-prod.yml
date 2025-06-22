@@ -2,7 +2,11 @@ name: Deploy Kubernetes - Produção
 
 on:
   push:
-    branches: [ homologacao ]
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -21,27 +25,27 @@ jobs:
       - name: Autenticar no Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          credentials_json: ${{ secrets.GCP_CREDENTIALS_PROD }}
 
       - name: Configurar Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
-          project_id: celtic-shape-452222-c9
+          project_id: infraestrutura-devops-prod
 
       - name: Verificar se cluster existe
         id: check
         run: |
           # Verificar se o cluster existe
-          if gcloud container clusters describe k8s-cluster-prod --location=southamerica-east1 --project=celtic-shape-452222-c9 >/dev/null 2>&1; then
+          if gcloud container clusters describe k8s-cluster --location=southamerica-east1 --project=infraestrutura-devops-prod >/dev/null 2>&1; then
             echo "cluster_exists=true" >> $GITHUB_OUTPUT
-            echo "cluster_name=k8s-cluster-prod" >> $GITHUB_OUTPUT
+            echo "cluster_name=k8s-cluster" >> $GITHUB_OUTPUT
             echo "cluster_location=southamerica-east1" >> $GITHUB_OUTPUT
-            echo "✅ Cluster k8s-cluster-prod já existe"
+            echo "✅ Cluster k8s-cluster já existe"
           else
             echo "cluster_exists=false" >> $GITHUB_OUTPUT
             echo "cluster_name=" >> $GITHUB_OUTPUT
             echo "cluster_location=" >> $GITHUB_OUTPUT
-            echo "❌ Cluster k8s-cluster-prod não existe"
+            echo "❌ Cluster k8s-cluster não existe"
           fi
 
   terraform-infra:
@@ -69,17 +73,19 @@ jobs:
       - name: Autenticar no Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          credentials_json: ${{ secrets.GCP_CREDENTIALS_PROD }}
 
       - name: Executar Terraform
         id: terraform
-        working-directory: terraform/application/prod
+        working-directory: terraform/application
         run: |
           terraform init -input=false
           terraform plan -input=false \
+            -var="project=infraestrutura-devops-prod" \
             -var="gcp_user=$GCP_USER" \
             -var="ssh_key_pub=$SSH_KEY_PUB"
           terraform apply -auto-approve -input=false \
+            -var="project=infraestrutura-devops-prod" \
             -var="gcp_user=$GCP_USER" \
             -var="ssh_key_pub=$SSH_KEY_PUB"
           
@@ -99,12 +105,12 @@ jobs:
       - name: Autenticar no Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          credentials_json: ${{ secrets.GCP_CREDENTIALS_PROD }}
 
       - name: Configurar Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
-          project_id: celtic-shape-452222-c9
+          project_id: infraestrutura-devops-prod
 
       - name: Instalar gke-gcloud-auth-plugin
         run: |
@@ -125,7 +131,7 @@ jobs:
         run: |
           gcloud container clusters get-credentials $CLUSTER_NAME \
             --location $CLUSTER_LOCATION \
-            --project celtic-shape-452222-c9
+            --project infraestrutura-devops-prod
 
       - name: Instalar Ansible e dependências
         run: |
@@ -141,9 +147,12 @@ jobs:
         working-directory: ansible
         run: |
           ansible-playbook -i k8s-inventory.ini deploy-k8s.yml \
+            -e "project_id=infraestrutura-devops-prod" \
             -e cluster_name=$CLUSTER_NAME \
             -e cluster_location=$CLUSTER_LOCATION \
-            -e docker_user=${{ secrets.DOCKER_USERNAME }}
+            -e docker_user=${{ secrets.DOCKER_USERNAME }} \
+            -e "frontend_image=frontend-main" \
+            -e "backend_image=backend-main"
 
       - name: Verificar status do deploy
         run: |

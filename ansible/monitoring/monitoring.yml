@@ -1,4 +1,4 @@
-- hosts: monitoring
+- hosts: all
   become: yes
   vars:
     monitoring_dir: /opt/monitoring
@@ -43,7 +43,7 @@
 
     - name: Copia docker-compose.yml para a VM
       copy:
-        src: ../files/docker-compose.yml
+        src: ./docker-compose.yml
         dest: "{{ monitoring_dir }}/docker-compose.yml"
         owner: ubuntu
         group: ubuntu

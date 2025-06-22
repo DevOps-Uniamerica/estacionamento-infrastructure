@@ -5,11 +5,13 @@
   gather_facts: false
 
   vars:
-    cluster_name: "{{ cluster_name }}"
-    cluster_location: "{{ cluster_location }}"
-    project_id: "celtic-shape-452222-c9"
+    cluster_name: "k8s-cluster"
+    cluster_location: "southamerica-east1"
+    project_id: "{{ project_id }}"
     docker_user: "{{ docker_user }}"
     app_namespace: "estacionamento"
+    frontend_image: "{{ frontend_image }}"
+    backend_image: "{{ backend_image }}"
     # Definir credenciais consistentes do PostgreSQL
     postgres_user: "postgres"
     postgres_password: "postgres"
@@ -405,7 +407,7 @@
                       echo "PostgreSQL está pronto!"
                 containers:
                 - name: backend
-                  image: "{{ docker_user }}/estacionamento-backend:latest"
+                  image: "{{ docker_user }}/{{ backend_image }}:latest"
                   imagePullPolicy: Always
                   env:
                   - name: SPRING_DATASOURCE_URL
@@ -567,7 +569,7 @@
               spec:
                 containers:
                 - name: frontend
-                  image: "{{ docker_user }}/estacionamento-frontend:latest"
+                  image: "{{ docker_user }}/{{ backend_image }}:latest"
                   imagePullPolicy: Always
                   ports:
                   - containerPort: 80
